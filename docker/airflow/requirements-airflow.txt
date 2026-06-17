@@ -1,4 +1,8 @@
 pandas
 psycopg2-binary
 boto3
-pyspark
+pyspark==3.5.1
+requests
+hdfs
+apache-airflow-providers-apache-spark==4.8.2
+apache-airflow-providers-postgres==5.11.2

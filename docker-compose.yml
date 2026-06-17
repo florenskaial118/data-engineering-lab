@@ -293,14 +293,28 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__FERNET_KEY: ""
       AIRFLOW__WEBSERVER__SECRET_KEY: lab_secret_key
-      _AIRFLOW_DB_MIGRATE: "true"
-      _AIRFLOW_WWW_USER_CREATE: "true"
-      _AIRFLOW_WWW_USER_USERNAME: admin
-      _AIRFLOW_WWW_USER_PASSWORD: admin
-    command: version
+      AIRFLOW_CONN_SPARK_DEFAULT: '{"conn_type":"spark","host":"spark://spark-master","port":7077}'
+      AIRFLOW_CONN_DWH_POSTGRES: postgresql://admin:admin@postgres-dwh:5432/dwh
+      HDFS_NAMENODE_URL: hdfs://namenode:8020
+      HDFS_WEBHDFS_URL: http://namenode:9870
+      HADOOP_USER_NAME: spark
+      SPARK_MASTER_URL: spark://spark-master:7077
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users list | grep -q admin ||
+      airflow users create
+      --username admin
+      --password admin
+      --firstname Admin
+      --lastname User
+      --role Admin
+      --email admin@example.com
+      "
     volumes:
-      - ./docker/airflow/dags:/opt/airflow/dags
-      - ./docker/airflow/logs:/opt/airflow/logs
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/jobs:/opt/airflow/jobs
+      - ./airflow/logs:/opt/airflow/logs
 
   airflow-webserver:
     build:
@@ -313,7 +327,15 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      namenode:
+        condition: service_started
+      datanode:
+        condition: service_started
+      hdfs-init:
+        condition: service_completed_successfully
       spark-master:
+        condition: service_started
+      spark-worker:
         condition: service_started
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -330,13 +352,19 @@ services:
       S3_SECRET_KEY: password123
       S3_BUCKET: datalake
       SPARK_MASTER_URL: spark://spark-master:7077
+      AIRFLOW_CONN_SPARK_DEFAULT: '{"conn_type":"spark","host":"spark://spark-master","port":7077}'
+      AIRFLOW_CONN_DWH_POSTGRES: postgresql://admin:admin@postgres-dwh:5432/dwh
+      HDFS_NAMENODE_URL: hdfs://namenode:8020
+      HDFS_WEBHDFS_URL: http://namenode:9870
+      HADOOP_USER_NAME: spark
       PYTHONPATH: /opt/airflow
     command: webserver
     ports:
       - "8088:8080"
     volumes:
-      - ./docker/airflow/dags:/opt/airflow/dags
-      - ./docker/airflow/logs:/opt/airflow/logs
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/jobs:/opt/airflow/jobs
+      - ./airflow/logs:/opt/airflow/logs
 
   airflow-scheduler:
     build:
@@ -349,7 +377,15 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
+      namenode:
+        condition: service_started
+      datanode:
+        condition: service_started
+      hdfs-init:
+        condition: service_completed_successfully
       spark-master:
+        condition: service_started
+      spark-worker:
         condition: service_started
     environment:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -366,11 +402,17 @@ services:
       S3_SECRET_KEY: password123
       S3_BUCKET: datalake
       SPARK_MASTER_URL: spark://spark-master:7077
+      AIRFLOW_CONN_SPARK_DEFAULT: '{"conn_type":"spark","host":"spark://spark-master","port":7077}'
+      AIRFLOW_CONN_DWH_POSTGRES: postgresql://admin:admin@postgres-dwh:5432/dwh
+      HDFS_NAMENODE_URL: hdfs://namenode:8020
+      HDFS_WEBHDFS_URL: http://namenode:9870
+      HADOOP_USER_NAME: spark
       PYTHONPATH: /opt/airflow
     command: scheduler
     volumes:
-      - ./docker/airflow/dags:/opt/airflow/dags
-      - ./docker/airflow/logs:/opt/airflow/logs
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/jobs:/opt/airflow/jobs
+      - ./airflow/logs:/opt/airflow/logs
 
 volumes:
   postgres_dwh_data:

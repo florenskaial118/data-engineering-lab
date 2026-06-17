@@ -1,4 +1,4 @@
-FROM bitnamilegacy/spark:3.5
+FROM bitnamilegacy/spark:3.5.1
 
 USER root
 
@@ -13,7 +13,7 @@ RUN python -m pip install --no-cache-dir \
     jupyterlab \
     pandas \
     pyhive \
-    pyspark==3.5.* \
+    pyspark==3.5.1 \
     psycopg2-binary \
     thrift \
     thrift_sasl \

@@ -1,7 +1,7 @@
-.PHONY: help up down postgres psql hive hive-check jupyter seminar logs
+.PHONY: help up down postgres psql hive hive-check jupyter airflow seminar logs
 
 help:
-	@printf "Targets: up, down, postgres, psql, hive, hive-check, jupyter, seminar, logs\n"
+	@printf "Targets: up, down, postgres, psql, hive, hive-check, jupyter, airflow, seminar, logs\n"
 
 up:
 	docker compose up -d
@@ -37,7 +37,14 @@ jupyter:
 	@printf "JupyterLab: http://localhost:8888\n"
 	@printf "Spark UI: http://localhost:4040 while SparkSession is running\n"
 
+airflow:
+	docker compose up -d --build postgres-dwh namenode datanode hdfs-init spark-master spark-worker postgres-airflow airflow-init airflow-webserver airflow-scheduler
+	@printf "Airflow UI: http://localhost:8088\n"
+	@printf "Login: admin / admin\n"
+	@printf "Spark UI: http://localhost:8080\n"
+	@printf "HDFS UI: http://localhost:9870\n"
+
 seminar: jupyter
 
 logs:
-	docker compose logs -f jupyter spark-master spark-worker namenode datanode hive-metastore hive-server
+	docker compose logs -f jupyter spark-master spark-worker namenode datanode hive-metastore hive-server airflow-webserver airflow-scheduler
