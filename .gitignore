@@ -8,4 +8,5 @@ __pycache__/
 .ipynb_checkpoints/
 data/tmp/
 logs/
+airflow/logs/
 .idea/

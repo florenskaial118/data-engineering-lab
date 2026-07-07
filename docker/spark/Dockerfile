@@ -7,6 +7,7 @@ ENV HADOOP_CONF_DIR="/opt/bitnami/spark/conf"
 ENV SPARK_CONF_DIR="/opt/bitnami/spark/conf"
 
 RUN python -m pip install --no-cache-dir \
+    awscli \
     boto3 \
     hdfs \
     jupyter \
@@ -27,7 +28,8 @@ COPY bin/hdfs /usr/local/bin/hdfs
 
 RUN chmod +x /usr/local/bin/hdfs && \
     ln -sf /opt/bitnami/python/bin/python /usr/local/bin/python && \
-    ln -sf /opt/bitnami/python/bin/python3 /usr/local/bin/python3
+    ln -sf /opt/bitnami/python/bin/python3 /usr/local/bin/python3 && \
+    ln -sf /opt/bitnami/python/bin/aws /usr/local/bin/aws
 
 RUN if ! getent group supergroup >/dev/null; then \
       printf 'supergroup:x:1001:\n' >> /etc/group; \

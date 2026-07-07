@@ -6,3 +6,6 @@ requests
 hdfs
 apache-airflow-providers-apache-spark==4.8.2
 apache-airflow-providers-postgres==5.11.2
+apache-airflow-providers-amazon==8.25.0
+airflow-clickhouse-plugin==1.4.0
+clickhouse-driver==0.2.9

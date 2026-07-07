@@ -1,0 +1,11 @@
+user_id,city,segment,registration_dt
+701,Moscow,vip,2026-01-10
+702,Saint Petersburg,regular,2026-01-15
+703,Kazan,new,2026-02-01
+704,Moscow,regular,2026-02-11
+705,Novosibirsk,new,2026-03-02
+706,Moscow,vip,2026-03-20
+707,Kazan,regular,2026-04-02
+708,Moscow,vip,2026-04-12
+709,Novosibirsk,new,2026-05-01
+710,Ekaterinburg,regular,2026-05-14
