@@ -1,6 +1,6 @@
-# Airflow template
+# Airflow
 
-Скопируйте шаблон DAG в рабочую папку:
+Создайте свой DAG в рабочей папке:
 
 ```text
 airflow/dags/ecommerce_s3_clickhouse_greenplum.py
@@ -14,4 +14,4 @@ airflow/jobs/ecommerce/users.csv
 airflow/jobs/ecommerce/order_items.csv
 ```
 
-Шаблон специально неполный: в нём отмечены места, куда нужно добавить SQL для ClickHouse и Greenplum.
+DAG должен быть простым и последовательным: загрузка CSV в S3, выполнение SQL для ClickHouse, выполнение SQL для Greenplum, построение витрин.

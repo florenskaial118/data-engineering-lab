@@ -265,7 +265,7 @@ dt, city, orders_count, users_count, items_count, total_revenue
 
 ## 5. Airflow
 
-Автоматизируйте пайплайн через Airflow.
+Автоматизируйте пайплайн через Airflow. DAG нужно написать самостоятельно.
 
 Рабочие файлы создайте здесь:
 
@@ -276,12 +276,6 @@ airflow/jobs/ecommerce/users.csv
 airflow/jobs/ecommerce/order_items.csv
 ```
 
-Можно использовать шаблон:
-
-```text
-materials/homework_05_s3_clickhouse_greenplum/airflow/dag_template.py
-```
-
 DAG:
 
 ```text
@@ -290,26 +284,27 @@ schedule=None
 catchup=False
 ```
 
+Сделайте простой последовательный DAG без дополнительных проверочных task-ов.
+
 Минимальная цепочка task-ов:
 
 ```text
-check_local_files
->> upload_raw_to_s3
+upload_raw_to_s3
 >> create_clickhouse_layers
 >> load_clickhouse_ods
+>> build_clickhouse_marts
 >> create_greenplum_layers
 >> load_greenplum_from_pxf
->> build_marts
->> run_checks
+>> build_greenplum_mart
 ```
 
 Требования:
 
-- S3 загрузка через `S3Hook` или `boto3`;
-- ClickHouse SQL через ClickHouse operator/hook;
-- Greenplum SQL через `PostgresOperator`, `SQLExecuteQueryOperator` или `PostgresHook`;
+- S3 загрузка через `S3Hook`, `boto3` или другой понятный способ из DAG;
+- ClickHouse SQL выполняется из DAG любым удобным способом;
+- Greenplum SQL выполняется из DAG через `PostgresOperator`, `SQLExecuteQueryOperator`, `PostgresHook` или аналогичный инструмент;
 - Greenplum должен читать raw-файлы только через PXF external tables;
-- в конце DAG должен вывести SQL-запросы для проверки результата.
+- DAG должен быть линейным и понятным: несколько последовательных операторов без ветвлений и отдельных проверок.
 
 Connections в Airflow уже добавлены в окружение:
 
@@ -327,6 +322,5 @@ greenplum_default
 2. SQL для Greenplum;
 3. код DAG;
 4. скриншот успешного запуска DAG;
-5. результаты проверочных запросов из `checks/`;
-6. короткий ответ про `ORDER BY` в ClickHouse;
-7. короткий ответ про `DISTRIBUTED BY` и `Redistribute Motion` в Greenplum.
+5. короткий ответ про `ORDER BY` в ClickHouse;
+6. короткий ответ про `DISTRIBUTED BY` и `Redistribute Motion` в Greenplum.
