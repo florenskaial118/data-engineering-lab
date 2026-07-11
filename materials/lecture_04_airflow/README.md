@@ -67,6 +67,7 @@ hdfs://namenode:8020/tmp/airflow_lecture/spark_output
 
 ```bash
 make airflow
+docker compose up -d airflow-webserver
 ```
 
 Airflow UI: `http://localhost:8088`

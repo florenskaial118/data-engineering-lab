@@ -9,3 +9,4 @@ __pycache__/
 data/tmp/
 logs/
 .idea/
+materials/seminar_04_spark_core/practice/spark_core_data/
