@@ -40,7 +40,7 @@ clickhouse:
 
 greenplum:
 	docker compose --profile s3 --profile greenplum up -d minio minio-init greenplum
-	@until docker compose exec greenplum pg_isready -U gpadmin -d postgres >/dev/null 2>&1; do sleep 2; done
+	@until docker compose exec greenplum bash -lc "source /opt/greenplum-db-6.8.1/greenplum_path.sh && pg_isready -U gpadmin -d postgres" >/dev/null 2>&1; do sleep 2; done
 	@printf "Greenplum: localhost:5434, database postgres, user gpadmin\n"
 	@printf "MinIO API: http://localhost:9000\n"
 	@printf "MinIO Console: http://localhost:9001\n"
@@ -73,7 +73,7 @@ check-clickhouse-s3:
 
 check-greenplum-s3:
 	docker compose --profile s3 --profile greenplum up -d minio minio-init greenplum
-	@until docker compose exec greenplum pg_isready -U gpadmin -d postgres >/dev/null 2>&1; do sleep 2; done
+	@until docker compose exec greenplum bash -lc "source /opt/greenplum-db-6.8.1/greenplum_path.sh && pg_isready -U gpadmin -d postgres" >/dev/null 2>&1; do sleep 2; done
 	docker compose --profile s3 run --rm --entrypoint /bin/sh minio-init -c "mc alias set local http://minio:9000 admin password123 && printf 'id,name\n1,greenplum\n' >/tmp/greenplum_s3_check.csv && mc cp /tmp/greenplum_s3_check.csv local/datalake/greenplum/check.csv && mc anonymous set download local/datalake"
 	docker compose exec greenplum bash -lc "timeout 3 bash -c '</dev/tcp/minio/9000'"
 	docker compose exec greenplum psql -U gpadmin -d postgres -c "SELECT version();"

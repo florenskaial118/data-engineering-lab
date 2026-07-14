@@ -116,7 +116,7 @@ services:
     cpus: 1
     shm_size: 1g
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U gpadmin -d postgres"]
+      test: ["CMD-SHELL", ". /opt/greenplum-db-6.8.1/greenplum_path.sh && pg_isready -U gpadmin -d postgres"]
       interval: 15s
       timeout: 5s
       retries: 10
