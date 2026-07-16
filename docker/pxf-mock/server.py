@@ -43,6 +43,22 @@ def source_from_fragment_header(header_value):
     return DEFAULT_SOURCE
 
 
+def source_from_headers(headers):
+    fragment_source = source_from_fragment_header(headers.get("X-GP-DATA-FRAGMENT"))
+    if fragment_source != DEFAULT_SOURCE:
+        return fragment_source
+
+    uri_source = normalize_source(headers.get("X-GP-URI"))
+    if uri_source != DEFAULT_SOURCE:
+        return uri_source
+
+    data_dir_source = normalize_source(headers.get("X-GP-DATA-DIR"))
+    if data_dir_source and data_dir_source != "v15":
+        return data_dir_source
+
+    return DEFAULT_SOURCE
+
+
 class PxfMockHandler(BaseHTTPRequestHandler):
     server_version = "PXFMock/0.1"
 
@@ -92,7 +108,7 @@ class PxfMockHandler(BaseHTTPRequestHandler):
         self.send_json({"PXFFragments": [fragment]})
 
     def handle_bridge(self):
-        source = source_from_fragment_header(self.headers.get("X-GP-DATA-FRAGMENT"))
+        source = source_from_headers(self.headers)
         url = f"{MINIO_ENDPOINT}/{source}"
         log(f"  fetch: {url}")
 
