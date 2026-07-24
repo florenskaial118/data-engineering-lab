@@ -148,6 +148,8 @@ SELECT ...
 
 Кратко ответьте: почему для `orders` ключ `ORDER BY (dt, user_id, order_id)` лучше, чем `ORDER BY order_id`, если основные запросы фильтруют по дате и агрегируют по пользователю или городу?
 
+потому что orders by определяет физический порядок данных на диске если сделать только ключ по заказу, агрегации по пользователю будут долго идти
+
 ## 4. Greenplum
 
 В Greenplum данные из S3 нужно читать только через PXF.
@@ -246,8 +248,10 @@ FROM stg.ecommerce_orders_bad_dist o
 JOIN ods.ecommerce_users u ON o.user_id = u.user_id
 GROUP BY u.city;
 ```
-
+    
 Кратко ответьте: где появляется `Redistribute Motion` и почему?
+
+в первом случае он появился только 1 раз перед group by, а во втором случае 2 раза - перед join (потому данные из orders_bad_dist перераспределяются по user_id) и перед group by
 
 ### 4.4. Витрина Greenplum
 

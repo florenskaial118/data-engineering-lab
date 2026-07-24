@@ -80,39 +80,6 @@ PARTITION BY toYYYYMM(registration_dt)
 ORDER BY (user_id, city);
 
 
-INSERT INTO ods.ecommerce_orders
-SELECT
-    order_id,user_id,status,amount,created_at,dt
-FROM s3(
-    'http://minio:9000/datalake/raw/ecommerce/orders/dt=2026-07-01/orders.csv',
-    'admin',
-    'password123',
-    'CSVWithNames',
-    'order_id UInt64, user_id UInt64, status String, amount Float64, created_at DateTime, dt Date'
-);
-
-INSERT INTO ods.ecommerce_order_items
-SELECT
-    order_item_id,order_id,product_id,product_name,quantity,item_price,dt
-FROM s3(
-    'http://minio:9000/datalake/raw/ecommerce/order_items/dt=2026-07-01/order_items.csv',
-    'admin',
-    'password123',
-    'CSVWithNames',
-    'order_item_id UInt64, order_id UInt64, product_id UInt64, product_name String, quantity UInt64, item_price Float64, dt Date'
-);
-
-INSERT INTO ods.ecommerce_users
-SELECT
-    user_id,city,segment,registration_dt
-FROM s3(
-    'http://minio:9000/datalake/raw/ecommerce/users/users.csv',
-    'admin',
-    'password123',
-    'CSVWithNames',
-    'user_id UInt64, city String, segment String, registration_dt Date'
-);
-
 
 
 
