@@ -10,3 +10,4 @@ data/tmp/
 logs/
 airflow/logs/
 .idea/
+materials/seminar_04_spark_core/practice/spark_core_data/

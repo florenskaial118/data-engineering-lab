@@ -22,6 +22,10 @@ airflow/jobs/orders.json
 /opt/airflow/jobs/orders.json
 ```
 
+```Shell
+cp materials/seminar_02_raw/data/orders.json airflow/jobs/orders.json
+```
+
 ## 1. DAG `orders_pipeline`
 
 Создайте DAG:
