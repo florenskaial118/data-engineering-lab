@@ -1,0 +1,103 @@
+# Финальный проект 
+
+## Выбраннный API
+
+Я выбрала API [JSONPlaceholder](https://jsonplaceholder.typicode.com) и такие сущности, как посты, комментарии и пользователи.
+
+## Обработка данных (Spark)
+
+1. JSON из RAW-слоя с опцией multiLine=true
+2. Развернем структуру - posts и comments имеют простую структуру, а вот users - вложенную в adress и company:
+
+root
+ |-- body: string (nullable = true)
+ |-- id: long (nullable = true)
+ |-- title: string (nullable = true)
+ |-- userId: long (nullable = true)
+
+root
+ |-- body: string (nullable = true)
+ |-- email: string (nullable = true)
+ |-- id: long (nullable = true)
+ |-- name: string (nullable = true)
+ |-- postId: long (nullable = true)
+
+root
+ |-- address: struct (nullable = true)
+ |    |-- city: string (nullable = true)
+ |    |-- geo: struct (nullable = true)
+ |    |    |-- lat: string (nullable = true)
+ |    |    |-- lng: string (nullable = true)
+ |    |-- street: string (nullable = true)
+ |    |-- suite: string (nullable = true)
+ |    |-- zipcode: string (nullable = true)
+ |-- company: struct (nullable = true)
+ |    |-- bs: string (nullable = true)
+ |    |-- catchPhrase: string (nullable = true)
+ |    |-- name: string (nullable = true)
+ |-- email: string (nullable = true)
+ |-- id: long (nullable = true)
+ |-- name: string (nullable = true)
+ |-- phone: string (nullable = true)
+ |-- username: string (nullable = true)
+ |-- website: string (nullable = true)
+3. Приведение типов:
+    userId, id → integer
+    id, postID → integer
+    address_geo_lat, address_geo_lng → Double, id → integer
+3. Удаление дублей по id
+4. Удаление строк с пропусками
+5. Сохранение в ods как Parquet
+6. Чтение записанных файлов из ods и составление витрины активности страниц пользователей - количество постов и количество комментариев к ним. Запись в mart как Parquet
+
+## Запись витрины в аналитическую БД
+
+Я выбрала CLickhouse из-за того, что для greenplum pfx не настроен на работу с hdfs. 
+
+В ClickHouse высокая цена изменения данных - поэтому если редактировать альбомы и посты нельзя, а список дел обновляется редко - то она в целом подходит
+
+## Проверка
+
+```SELECT * FROM mart.JSONPlaceholder_UsersActivity;```
+
+В конце делаю проверку, что таблица есть в clickhouse (подключаюсь через PyhtonOperator , потому что CliclHouseOperator у меня не выводил логи)
+
+результат - 
+INFO - User 1: 10 posts, 50 comments | Gwenborough | Romaguera-Crona
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 2: 10 posts, 50 comments | Wisokyburgh | Deckow-Crist
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 3: 10 posts, 50 comments | McKenziehaven | Romaguera-Jacobson
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 4: 10 posts, 50 comments | South Elvis | Robel-Corkery
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 5: 10 posts, 50 comments | Roscoeview | Keebler LLC
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 6: 10 posts, 50 comments | South Christy | Considine-Lockman
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 7: 10 posts, 50 comments | Howemouth | Johns Group
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 8: 10 posts, 50 comments | Aliyaview | Abernathy Group
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 9: 10 posts, 50 comments | Bartholomebury | Yost and Sons
+[2026-07-29, 09:51:01 UTC] {logging_mixin.py:188} INFO - User 10: 10 posts, 50 comments | Lebsackbury | Hoeger LLC
+
+## Airflow DAG
+
+extract_api >> load_raw >> transform >> load_mart >> check_result
+
+Task-и:
+
+- extract_api: загрузка данных из API в HDFS (PythonOperator)
+- load_raw: сохранение JSON в RAW-слой (SparkSubmitOperator)
+- transform: обработка через Spark (SparkSubmitOperator)
+- load_mart: загрузка в ClickHouse (ClickHouseOperator)
+- check_result: проверка результата (PythonOperator с выводом в лог)
+
+## Итоговая структура слоев:
+
+/warehouse/raw/JSONPlaceholder:
+    comments/dt=YYYY-MM-DD/albums.json
+    posts/dt=YYYY-MM-DD/posts.json
+    users/dt=YYYY-MM-DD/todos.json
+
+
+/warehouse/ods:
+    JSONPlaceholder_comments/comments/*.parquet
+    JSONPlaceholder_posts/posts/*.parquet
+    JSONPlaceholder_users/users/*.parquet
+
+
+/warehouse/mart/JSONPlaceholder_UsersActivity/UsersActivity/*.parquet
